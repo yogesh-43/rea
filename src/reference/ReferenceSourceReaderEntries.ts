@@ -357,7 +357,9 @@ const readSymlinkTarget = async (
   } catch (cause: unknown) {
     const code =
       cause instanceof Error ? Reflect.get(cause, "code") : undefined;
-    if (code !== "ENOENT") throw cause;
+    // ENOTDIR means a target component is a file, not that the link changed.
+    // Keep both missing-target cases inside the surrounding identity checks.
+    if (code !== "ENOENT" && code !== "ENOTDIR") throw cause;
     return {
       status: "read",
       kind: "symlink",
